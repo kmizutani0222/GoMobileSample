@@ -26,17 +26,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         param1 = (EditText) findViewById(R.id.param1);
         param2 = (EditText) findViewById(R.id.param2);
 
-        Button request_btn = (Button) findViewById(R.id.request_btn);
-        request_btn.setOnClickListener(this);
+        Button request1_btn = (Button) findViewById(R.id.request1_btn);
+        request1_btn.setOnClickListener(this);
+        Button request2_btn = (Button) findViewById(R.id.request2_btn);
+        request2_btn.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            // リクエストボタンが押された
-            case R.id.request_btn:
-                PostSample.Initialize();
+            // リクエスト１ボタンが押された
+            case R.id.request1_btn:
                 PostSample.SetParams("param1", param1.getText().toString());
+                response.setText(PostSample.HttpPost("/apisample"));
+                break;
+            // リクエスト２ボタンが押された
+            case R.id.request2_btn:
                 PostSample.SetParams("param2", param2.getText().toString());
                 response.setText(PostSample.HttpPost("/apisample"));
                 break;
