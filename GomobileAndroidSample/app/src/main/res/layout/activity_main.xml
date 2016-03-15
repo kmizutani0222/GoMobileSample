@@ -28,6 +28,14 @@
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/request1_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="Param1 Request!" />
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,11 +54,11 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/request_btn"
+        android:id="@+id/request2_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:text="Request!" />
+        android:text="Param2 Request!" />
 
     <TextView
         android:id="@+id/response"
