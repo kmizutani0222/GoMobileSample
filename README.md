@@ -9,9 +9,11 @@ GoMobileで作ったModuleとその周辺のサンプルコード
 # 以下LTで使った資料
 
 # GoMobileでModuleを作った話
+株式会社アスクリード
+水谷　健太
 
-@mizutani0222
-kenta.mizutani.56
+Twitter : @mizutani0222
+Facebook : kenta.mizutani.56
 Androidエンジニア
 PHPとかちょっとかじってる
 
@@ -127,30 +129,45 @@ func HttpPost(api_url string) string {
 }
 ```
 
-## コードはGithubに
-Github : https://github.com/kmizutani0222/GoMobileSample
-
 # Androidに組み込む
 1. メニュー File > New > New Module... を選択、Import .JAR/.AAR Package でライブラリのモジュールを作る。
 1. メニュー File > Project Structure... を選択、 ライブラリを使用するアプリケーションのモジュールを選択し、 「Dependencies」のタブを開き、 プラス記号「＋」アイコンを押し「Module Dependency」を選ぶ。 手順1で追加したモジュールを選択。
 
 #  コード
 ``` MainActivity.java
-PostSample.SetParams("param1", param1.getText().toString());
-PostSample.SetParams("param2", param2.getText().toString());
-response.setText(PostSample.HttpPost("/apisample"));
+switch (v.getId()) {
+    // リクエスト１ボタンが押された
+    case R.id.request1_btn:
+        PostSample.SetParams("param1", param1.getText().toString());
+        response.setText(PostSample.HttpPost("/apisample"));
+         break;
+    // リクエスト２ボタンが押された
+    case R.id.request2_btn:
+        PostSample.SetParams("param2", param2.getText().toString());
+        response.setText(PostSample.HttpPost("/apisample"));
+         break;
+}
 ```
 
-# うごけー！！
+# こんな感じの画面
+<img width="300" alt="Screenshot_2016-03-15-19-39-13.png (85.5 kB)" src="https://img.esa.io/uploads/production/attachments/2294/2016/03/15/6362/d380af33-a4a4-4131-b415-d419ba29f462.png">
 
 
-## おかしいぞ・・・
-あれ、どんどんパラメーターが増えて行く・・・。
-これ、グローバルな変数になってるんだね。
+# 動いた！
+<img width="300" alt="Screenshot_2016-03-15-19-15-22.png (90.5 kB)" src="https://img.esa.io/uploads/production/attachments/2294/2016/03/15/6362/7fa71c45-6ed9-442d-b90b-e27d42251b30.png">
 
-仕方ない・・・。
 
-## とりあえず初期化しよう
+
+# なんかおかしい
+<img width="300" alt="Screenshot_2016-03-15-19-15-22.png (120.2 kB)" src="https://img.esa.io/uploads/production/attachments/2294/2016/03/15/6362/8655257b-fecc-4ce2-bb90-dd6f6868fe8d.png">
+
+# param1が消えてない！
+これは、一回セットすると、アプリ落とすまで消えないんだね。
+なるほど。
+
+じゃあ
+
+## API呼び出す前に必ず初期化だ
 ``` postSample.go
 // とにかく最初に呼び出す
 func Initialize() {
@@ -159,11 +176,24 @@ func Initialize() {
 ```
 ## Androidも修正
 ``` MainActivity.java
-PostSample.Initialize(); ←ここ追加
-PostSample.SetParams("param1", param1.getText().toString());
-PostSample.SetParams("param2", param2.getText().toString());
-response.setText(PostSample.HttpPost("/apisample"));
+switch (v.getId()) {
+    // リクエスト１ボタンが押された
+    case R.id.request1_btn:
+        PostSample.Initialize();   // ここ追加
+        PostSample.SetParams("param1", param1.getText().toString());
+        response.setText(PostSample.HttpPost("/apisample"));
+         break;
+    // リクエスト２ボタンが押された
+    case R.id.request2_btn:
+        PostSample.Initialize();  // ここ追加
+        PostSample.SetParams("param2", param2.getText().toString());
+        response.setText(PostSample.HttpPost("/apisample"));
+         break;
+}
 ```
+
+# できた
+<img width="300" alt="Screenshot_2016-03-15-19-23-35.png (113.6 kB)" src="https://img.esa.io/uploads/production/attachments/2294/2016/03/15/6362/73be7563-eb3d-409b-be84-0e399a87ab0b.png">
 
 # iOSに追加
 
@@ -172,6 +202,9 @@ frameworkってファイルができるみたいです。
 
 # まとめ
 超簡単に導入できた！
+
+# コードや資料は<br/>Githubに置いときましたー
+Github : https://github.com/kmizutani0222/GoMobileSample
 
 
 #  参考
