@@ -5,3 +5,177 @@ GoMobileで作ったModuleとその周辺のサンプルコード
 - GomobileAndroidSample　Androidのソースコード
 - httpRequest Androidに組み込むGomobileで作ったmoduleとコード
 - server リクエストを受け取るサーバーのソースコード
+
+# 以下LTで使った資料
+
+# GoMobileでModuleを作った話
+
+@mizutani0222
+kenta.mizutani.56
+Androidエンジニア
+PHPとかちょっとかじってる
+
+# なんで？
+iOSとAndroidで共通化できたらいいなって思った
+~~iOSのライブラリ作れたら、iOS覚える気になると思った~~
+
+# やったこと
+WebAPIを呼び出して、受け取ったJSONを返す
+
+# これだけ！
+
+# 良かったこと
+サーバー側のAPIが出来てなくても、ライブラリで適当な戻り値を返してあげれば、Android本体のコードにまったく影響がなかった。
+
+# ビビってること
+まだ実験段階なので、やっぱりやめたとか言われたら泣ける
+
+# 苦労したこと
+
+# 検索しづらい 
+ [郷ひろみ公式 GO- MOBILE](http://hiromi-go.net.fanmo.jp/pc/)とか出てくる
+<img width="478" alt="スクリーンショット 2016-03-14 22.19.53.png (636.1 kB)" src="https://img.esa.io/uploads/production/attachments/2294/2016/03/14/6362/10930dbb-9027-4713-94cd-1d2e913eb8d6.png">
+
+# これだけ！
+
+# 本当に苦労したこと
+publicなメソッドの引数や戻り値に配列が渡せないこと
+
+# サンプルコード
+## リクエストのパラメーターを指定するところ
+``` postSample.go
+func SetParams(name string, val string) {
+	params[name] = val;
+}
+```
+## リクエストパラメーターを設定
+``` postSample.go
+func HttpPost(api_url string) string {
+	// 送信用パラメーターを作成
+	bparams := &bytes.Buffer{}
+	writer := multipart.NewWriter(bparams)
+
+	// パラメーターを書き込んでいく
+	for key, val := range params {
+		fmt.Println(key + ":" + val)
+		file, err := os.Open(val)
+		// エラーだった場合ファイルではない
+		if err != nil {
+			// 通常のパラメーターとして書き込み
+			_ = writer.WriteField(key, val)
+		} else {
+			fmt.Println("is File")
+			// ファイルとして書き込み
+			part, err := writer.CreateFormFile(key, filepath.Base(val))
+			if err != nil {
+				return getErrorJSON(901, "ファイルの送信に失敗しました")
+			}
+			_, err = io.Copy(part, file)
+		}
+	}
+	err := writer.Close()
+```
+## リクエストを作る
+``` postSample.go
+	req, err := http.NewRequest(
+        "POST",
+        getHttpUrl(api_url),
+        bparams)
+
+	if err != nil {
+		return getErrorJSON(903, "通信に失敗しました")
+	}
+```
+## ヘッダーの設定 
+``` postSample.go
+	// 持続接続を設定
+	req.Header.Set("Connection", "Keep-Alive")
+
+	// Content-Type 設定
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+
+    // Basic認証がある場合はコメントを外す
+//    req.Header.Add("Authorization", getBasicAuth(auth_id, auth_pass))
+```
+## 送信部分
+``` postSample.go
+    // タイムアウトを15秒に設定
+    client := &http.Client{ Timeout: time.Duration(15 * time.Second) }
+    resp, err := client.Do(req)
+    if err != nil {
+    	fmt.Println(err.Error())
+    	return getErrorJSON(500, err.Error())
+    }
+
+    defer resp.Body.Close()
+```
+## 受け取った情報をチェック
+``` postSample.go
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+		return getErrorJSON(904, err.Error())
+	}
+
+	// ステータスによるエラーハンドリング(正常終了じゃなければ)
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("%d", resp.StatusCode)
+		return getErrorJSON(resp.StatusCode, resp.Status)
+    }
+
+	return string(body)
+}
+```
+
+## コードはGithubに
+Github : https://github.com/kmizutani0222/GoMobileSample
+
+# Androidに組み込む
+1. メニュー File > New > New Module... を選択、Import .JAR/.AAR Package でライブラリのモジュールを作る。
+1. メニュー File > Project Structure... を選択、 ライブラリを使用するアプリケーションのモジュールを選択し、 「Dependencies」のタブを開き、 プラス記号「＋」アイコンを押し「Module Dependency」を選ぶ。 手順1で追加したモジュールを選択。
+
+#  コード
+``` MainActivity.java
+PostSample.SetParams("param1", param1.getText().toString());
+PostSample.SetParams("param2", param2.getText().toString());
+response.setText(PostSample.HttpPost("/apisample"));
+```
+
+# うごけー！！
+
+
+## おかしいぞ・・・
+あれ、どんどんパラメーターが増えて行く・・・。
+これ、グローバルな変数になってるんだね。
+
+仕方ない・・・。
+
+## とりあえず初期化しよう
+``` postSample.go
+// とにかく最初に呼び出す
+func Initialize() {
+	params = map[string]string{}
+}
+```
+## Androidも修正
+``` MainActivity.java
+PostSample.Initialize(); ←ここ追加
+PostSample.SetParams("param1", param1.getText().toString());
+PostSample.SetParams("param2", param2.getText().toString());
+response.setText(PostSample.HttpPost("/apisample"));
+```
+
+# iOSに追加
+
+# 担当者の方、頑張って下さい！
+frameworkってファイルができるみたいです。
+
+# まとめ
+超簡単に導入できた！
+
+
+#  参考
+- [C++によるiOSとAndroidでのクロスプラットフォーム開発：Dropboxの教訓](http://www.infoq.com/jp/news/2014/06/dropbox-cpp-crossplatform-mobile)
+- [gomobileでiOS用のライブラリをビルドするまで](http://qiita.com/naoty_k/items/e2bec591737218da1819)
+- [gvmでgoをバージョン指定で簡単インストール](http://qiita.com/isaoshimizu/items/1a5d51aed98a57a9bcd4)
+- [gomobileでiOS用のライブラリをビルドするまで](http://qiita.com/naoty_k/items/e2bec591737218da1819)
