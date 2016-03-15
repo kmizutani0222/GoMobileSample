@@ -37,11 +37,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             // リクエスト１ボタンが押された
             case R.id.request1_btn:
+                PostSample.Initialize();
                 PostSample.SetParams("param1", param1.getText().toString());
                 response.setText(PostSample.HttpPost("/apisample"));
                 break;
             // リクエスト２ボタンが押された
             case R.id.request2_btn:
+                PostSample.Initialize();
                 PostSample.SetParams("param2", param2.getText().toString());
                 response.setText(PostSample.HttpPost("/apisample"));
                 break;
